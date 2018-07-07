@@ -1,6 +1,6 @@
 package graph_test
 
-import "test/graph"
+import "github.com/ajz01/graph"
 import "testing"
 import "fmt"
 
@@ -20,7 +20,7 @@ func CompareTraversal(tr, r graph.Traversal, t *testing.T) {
 }
 
 func TestConnectedBfs(t *testing.T) {
-	data := graph.IntGraph {{15, 25},{15, 50},{25, 50}}
+	data := graph.IntGraph{{15, 25}, {15, 50}, {25, 50}}
 	g, _ := graph.InitEdgeList(data)
 	tr := graph.Bfs(g, 0)
 	r := graph.Traversal{
@@ -34,14 +34,14 @@ func TestConnectedBfs(t *testing.T) {
 }
 
 func TestStringConnectedBfs(t *testing.T) {
-	data := graph.StringGraph {
+	data := graph.StringGraph{
 		{
 			graph.StringId{"Test", 15},
 			graph.StringId{"Test", 25},
-		},{
+		}, {
 			graph.StringId{"Test", 15},
 			graph.StringId{"Test", 50},
-		},{
+		}, {
 			graph.StringId{"Test", 25},
 			graph.StringId{"Test", 50},
 		},

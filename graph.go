@@ -1,9 +1,9 @@
 // Pacakge graph provides graph operations for any type that
-// implements graph.Interface. Traversal data is provided by 
+// implements graph.Interface. Traversal data is provided by
 // the graph.Traversal type.
 package graph
 
-import "test/graph/queue"
+import "github.com/ajz01/graph/queue"
 
 type Color int
 
@@ -36,11 +36,11 @@ type Edge struct {
 }
 
 type Traversal struct {
-	Color []Color
+	Color          []Color
 	VertexOrdering []int
-	EdgeOrdering []Edge
-	Parent []int
-	Distance []int
+	EdgeOrdering   []Edge
+	Parent         []int
+	Distance       []int
 }
 
 func NewTraversal(n int) Traversal {
@@ -77,7 +77,7 @@ func InitEdgeList(g Interface) (IntGraph, error) {
 }
 
 // Bfs returns a traversal based on graph data
-// collected during a breadth first search. 
+// collected during a breadth first search.
 func Bfs(g Interface, s int) Traversal {
 	t := NewTraversal(g.Size())
 	sz := g.Size()
@@ -108,23 +108,22 @@ func Bfs(g Interface, s int) Traversal {
 	return t
 }
 
-
 // Convience types for common cases
 type IntGraph [][]int
 
 func (g IntGraph) Get(i, j int) int { return g[i][j] }
-func (g IntGraph) Set(i, j, v int) { g[i][j] = v }
-func (g IntGraph) Size() int { return len(g) }
-func (g IntGraph) Len(i int) int { return len(g[i]) }
+func (g IntGraph) Set(i, j, v int)  { g[i][j] = v }
+func (g IntGraph) Size() int        { return len(g) }
+func (g IntGraph) Len(i int) int    { return len(g[i]) }
 
 type StringId struct {
-	S string
+	S  string
 	Id int
 }
 
 type StringGraph [][]StringId
 
 func (g StringGraph) Get(i, j int) int { return g[i][j].Id }
-func (g StringGraph) Set(i, j, v int) { g[i][j].Id = v }
-func (g StringGraph) Size() int { return len(g) }
-func (g StringGraph) Len(i int) int { return len(g[i]) }
+func (g StringGraph) Set(i, j, v int)  { g[i][j].Id = v }
+func (g StringGraph) Size() int        { return len(g) }
+func (g StringGraph) Len(i int) int    { return len(g[i]) }
