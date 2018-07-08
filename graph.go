@@ -25,10 +25,16 @@ const (
 //
 // Edge lists consisting of a [][]graph.Interface can be converted using the InitEdgeList graph.Interface method.
 type Interface interface {
-	Get(i, j int) int
-	Set(i, j, v int)
+	Get(int, int) int
+	//Set(i, j, v int)
 	Size() int
-	Len(i int) int
+	Len(int) int
+}
+
+type Modifiable interface {
+	Interface
+	Add(int, int)
+	Remove(int)
 }
 
 type Edge struct {
@@ -54,7 +60,7 @@ func NewTraversal(n int) Traversal {
 
 // InitEdgeList returns an IntGraph re-arranged as an adjacency list of new unique vertex ids built
 // from an edge list graph.Interface g.
-func InitEdgeList(g Interface) (IntGraph, error) {
+func InitEdgeList(g Interface) (IntGraph, map[int]int, error) {
 	m := make(map[int]int, g.Size())
 	for i := 0; i < g.Size(); i++ {
 		for j := 0; j < g.Len(i); j++ {
@@ -74,7 +80,7 @@ func InitEdgeList(g Interface) (IntGraph, error) {
 	for i := 0; i < g.Size(); i++ {
 		d[m[g.Get(i, 0)]] = append(d[m[g.Get(i, 0)]], m[g.Get(i, 1)])
 	}
-	return d, nil
+	return d, m, nil
 }
 
 // Bfs returns a traversal based on graph data
@@ -140,15 +146,32 @@ func Dfs(g Interface, s int) Traversal {
 	return t
 }
 
-
 // Convience types for common cases
 type IntGraph [][]int
 
 func (g IntGraph) Get(i, j int) int { return g[i][j] }
-func (g IntGraph) Set(i, j, v int)  { g[i][j] = v }
+//func (g IntGraph) Set(i, j, v int)  { g[i][j] = v }
 func (g IntGraph) Size() int        { return len(g) }
 func (g IntGraph) Len(i int) int    { return len(g[i]) }
-
+func (g *IntGraph) Add(v, u int) {
+	if v > len(*g) - 1 {
+		a := make([][]int, v - len(*g))
+		*g = append(*g, a...)
+	}
+	(*g)[v - 1] = append((*g)[v - 1], u)
+}
+func (g *IntGraph) Remove(v int) {
+	for i := range *g {
+		for j := range (*g)[i] {
+			if (*g)[i][j] == v {
+				(*g)[i] = append((*g)[i][:j-1], (*g)[i][j:]...)
+			}
+		}
+		if i == v {
+			*g = append((*g)[:i-1], (*g)[i:]...)
+		}
+	}
+}
 type StringId struct {
 	S  string
 	Id int
