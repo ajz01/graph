@@ -8,22 +8,22 @@ import "strconv"
 
 func graph_init(add chan graph.Edge, remove chan int, p chan int, quit chan int) {
 	data := graph.IntGraph([][]int{{15, 25}, {15, 50}, {25, 50}})
-	g, _,  _ := graph.InitEdgeList(data)
+	g, _, _ := graph.InitEdgeList(data)
 	for {
 		select {
-			case v := <-add:
-				g.Add(v.V, v.U)
-				fmt.Printf("add: %d\n", v)
-			case v := <-remove:
-				g.Remove(v)
-				fmt.Printf("remove: %d\n", v)
-			case <-p:
-				t := graph.Bfs(g, 0)
-				fmt.Printf("%v\n", t)
-			case <-quit:
-				fmt.Println("quit")
-				return
-			default:
+		case v := <-add:
+			g.Add(v.V, v.U)
+			fmt.Printf("add: %d\n", v)
+		case v := <-remove:
+			g.Remove(v)
+			fmt.Printf("remove: %d\n", v)
+		case <-p:
+			t := graph.Bfs(g, 0)
+			fmt.Printf("%v\n", t)
+		case <-quit:
+			fmt.Println("quit")
+			return
+		default:
 		}
 	}
 }

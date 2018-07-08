@@ -74,3 +74,35 @@ func TestConnectedDfs(t *testing.T) {
 	}
 	CompareTraversal(tr, r, t)
 }
+
+func TestStrongConnComponents(t *testing.T) {
+	data := graph.IntGraph{{15, 25}, {15, 50}, {25, 50}, {35, 75}, {100, 300}}
+	g, _, _ := graph.InitEdgeList(data)
+	tr := graph.StrongConnComponents(g)
+	r := []graph.Traversal{
+		graph.Traversal{
+			[]graph.Color{graph.Black, graph.Black, graph.Black, graph.White, graph.White, graph.White, graph.White},
+			[]int{0, 2, 1},
+			[]graph.Edge{{0, 1}, {0, 2}, {1, 2}},
+			[]int{-1, 0, 0, 0, 0, 0, 0},
+			[]int{0, 1, 1, 0, 0, 0, 0},
+		},
+		graph.Traversal{
+			[]graph.Color{graph.Black, graph.Black, graph.Black},
+			[]int{0, 2, 1},
+			[]graph.Edge{{0, 1}, {0, 2}, {1, 2}},
+			[]int{-1, 0, 0},
+			[]int{0, 1, 1},
+		},
+		graph.Traversal{
+			[]graph.Color{graph.Black, graph.Black, graph.Black},
+			[]int{0, 2, 1},
+			[]graph.Edge{{0, 1}, {0, 2}, {1, 2}},
+			[]int{-1, 0, 0},
+			[]int{0, 1, 1},
+		},
+	}
+	for i, _ := range tr {
+		CompareTraversal(tr[i], r[i], t)
+	}
+}

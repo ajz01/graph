@@ -42,6 +42,12 @@ type Edge struct {
 	V int
 }
 
+// Traversal stores the nformation discovered during a graph traversal operation.
+// for methods such as StrongConnComponents that run multiple passes of a traversal
+// a slice of Traversals is returned so that each unique component can be analyzed.
+// The index of each Traversal in such a Traversal slice can be used as a component id
+// and the vertices belonging to that component are easily identified by inspecting the
+// VertexOrdering field of each components Traversal
 type Traversal struct {
 	Color          []Color
 	VertexOrdering []int
@@ -83,7 +89,7 @@ func InitEdgeList(g Interface) (IntGraph, map[int]int, error) {
 	return d, m, nil
 }
 
-// Bfs returns a traversal based on graph data
+// Bfs returns a Traversal based on graph data
 // collected during a breadth first search.
 func Bfs(g Interface, s int) Traversal {
 	t := NewTraversal(g.Size())
@@ -115,7 +121,7 @@ func Bfs(g Interface, s int) Traversal {
 	return t
 }
 
-// Dfs returns a traversal based on graph data
+// Dfs returns a Traversal based on graph data
 // collected during a depth first search.
 func Dfs(g Interface, s int) Traversal {
 	t := NewTraversal(g.Size())
@@ -146,19 +152,37 @@ func Dfs(g Interface, s int) Traversal {
 	return t
 }
 
+// StrongConnComponents returns a slice of Traversals one for each strongly connected component.
+// the index of each Traversal can be used as a unique component id and the verices belonging
+// to that component can be obtained from the VertexOrdering field of the Traversal.
+func StrongConnComponents(g Interface) []Traversal {
+	t := make([]Color, g.Size())
+	var m []Traversal
+	for i := 0; i < g.Size(); i++ {
+		if t[i] == White {
+			m = append(m, Dfs(g, i))
+		}
+		for j, v := range m[len(m)-1].Color {
+			t[j] = v
+		}
+	}
+	return m
+}
+
 // Convience types for common cases
 type IntGraph [][]int
 
 func (g IntGraph) Get(i, j int) int { return g[i][j] }
+
 //func (g IntGraph) Set(i, j, v int)  { g[i][j] = v }
-func (g IntGraph) Size() int        { return len(g) }
-func (g IntGraph) Len(i int) int    { return len(g[i]) }
+func (g IntGraph) Size() int     { return len(g) }
+func (g IntGraph) Len(i int) int { return len(g[i]) }
 func (g *IntGraph) Add(v, u int) {
-	if v > len(*g) - 1 {
-		a := make([][]int, v - len(*g))
+	if v > len(*g)-1 {
+		a := make([][]int, v-len(*g))
 		*g = append(*g, a...)
 	}
-	(*g)[v - 1] = append((*g)[v - 1], u)
+	(*g)[v-1] = append((*g)[v-1], u)
 }
 func (g *IntGraph) Remove(v int) {
 	for i := range *g {
@@ -172,6 +196,7 @@ func (g *IntGraph) Remove(v int) {
 		}
 	}
 }
+
 type StringId struct {
 	S  string
 	Id int
