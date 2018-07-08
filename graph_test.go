@@ -5,6 +5,9 @@ import "testing"
 import "fmt"
 
 func CompareTraversal(tr, r graph.Traversal, t *testing.T) {
+	if fmt.Sprintf("%v", tr.Color) != fmt.Sprintf("%v", r.Color) {
+		t.Errorf("Invalid Color have %v want %v", tr.Color, r.Color)
+	}
 	if fmt.Sprintf("%v", tr.VertexOrdering) != fmt.Sprintf("%v", r.VertexOrdering) {
 		t.Errorf("Invalid Vertex Ordering have %v want %v", tr.VertexOrdering, r.VertexOrdering)
 	}
@@ -51,6 +54,20 @@ func TestStringConnectedBfs(t *testing.T) {
 	r := graph.Traversal{
 		[]graph.Color{graph.Black, graph.Black, graph.Black},
 		[]int{0, 1, 2},
+		[]graph.Edge{graph.Edge{0, 1}, graph.Edge{0, 2}, graph.Edge{1, 2}},
+		[]int{-1, 0, 0},
+		[]int{0, 1, 1},
+	}
+	CompareTraversal(tr, r, t)
+}
+
+func TestConnectedDfs(t *testing.T) {
+	data := graph.IntGraph{{15, 25}, {15, 50}, {25, 50}}
+	g, _ := graph.InitEdgeList(data)
+	tr := graph.Dfs(g, 0)
+	r := graph.Traversal{
+		[]graph.Color{graph.Black, graph.Black, graph.Black},
+		[]int{0, 2, 1},
 		[]graph.Edge{graph.Edge{0, 1}, graph.Edge{0, 2}, graph.Edge{1, 2}},
 		[]int{-1, 0, 0},
 		[]int{0, 1, 1},

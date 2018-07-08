@@ -4,6 +4,7 @@
 package graph
 
 import "github.com/ajz01/graph/queue"
+import "github.com/ajz01/graph/stack"
 
 type Color int
 
@@ -51,7 +52,7 @@ func NewTraversal(n int) Traversal {
 	return t
 }
 
-// InitEdgeList returns an adjacency list of new unique vertex ids built
+// InitEdgeList returns an IntGraph re-arranged as an adjacency list of new unique vertex ids built
 // from an edge list graph.Interface g.
 func InitEdgeList(g Interface) (IntGraph, error) {
 	m := make(map[int]int, g.Size())
@@ -107,6 +108,38 @@ func Bfs(g Interface, s int) Traversal {
 	}
 	return t
 }
+
+// Dfs returns a traversal based on graph data
+// collected during a depth first search.
+func Dfs(g Interface, s int) Traversal {
+	t := NewTraversal(g.Size())
+	sz := g.Size()
+	for v := 0; v < sz; v++ {
+		t.Color[v] = White
+	}
+	t.Color[s] = Gray
+	t.Parent[s] = -1
+	t.Distance[s] = 0
+	var st stack.IntSlice
+	st.Push(s)
+	for !st.Empty() {
+		u := st.Pop()
+		t.VertexOrdering = append(t.VertexOrdering, u)
+		for i := 0; i < g.Len(u); i++ {
+			v := g.Get(u, i)
+			t.EdgeOrdering = append(t.EdgeOrdering, Edge{u, v})
+			if t.Color[v] == White {
+				t.Color[v] = Gray
+				t.Parent[v] = u
+				t.Distance[v] = t.Distance[u] + 1
+				st.Push(v)
+			}
+		}
+		t.Color[u] = Black
+	}
+	return t
+}
+
 
 // Convience types for common cases
 type IntGraph [][]int
