@@ -31,9 +31,20 @@ type Interface interface {
 	Len(int) int
 }
 
+type Weighted interface {
+	Interface
+	Weight(int, int) int
+}
+
 type Modifiable interface {
 	Interface
 	Add(int, int)
+	Remove(int)
+}
+
+type WeightedModifiable interface {
+	Interface
+	Add(int, int, int)
 	Remove(int)
 }
 
@@ -66,32 +77,39 @@ func NewTraversal(n int) Traversal {
 
 // InitEdgeList returns an IntGraph re-arranged as an adjacency list of new unique vertex ids built
 // from an edge list graph.Interface g.
-func InitEdgeList(g Interface) (IntGraph, map[int]int, error) {
+func InitEdgeList(g Interface) (Interface, map[int]int, error) {
 	m := make(map[int]int, g.Size())
 	for i := 0; i < g.Size(); i++ {
-		for j := 0; j < g.Len(i); j++ {
+		for j := 0; j < 2; j++ {
 			m[g.Get(i, j)] = -1
 		}
 	}
 	n := 0
 	for i := 0; i < g.Size(); i++ {
-		for j := 0; j < g.Len(i); j++ {
+		for j := 0; j < 2; j++ {
 			if m[g.Get(i, j)] == -1 {
 				m[g.Get(i, j)] = n
 				n++
 			}
 		}
 	}
+	if v, ok := g.(Weighted); ok {
+		d := make(IntWeightedGraph, n)
+		for i := 0; i < g.Size(); i++ {
+			d.Add(m[g.Get(i, 0)], m[g.Get(i, 1)], v.Weight(i, 1))
+		}
+		return d, m, nil
+	}
 	d := make(IntGraph, n)
 	for i := 0; i < g.Size(); i++ {
-		d[m[g.Get(i, 0)]] = append(d[m[g.Get(i, 0)]], m[g.Get(i, 1)])
+		d.Add(m[g.Get(i, 0)], m[g.Get(i, 1)])
 	}
 	return d, m, nil
 }
 
 // Bfs returns a Traversal based on graph data
 // collected during a breadth first search.
-func Bfs(g Interface, s int) Traversal {
+func Bfs(g Interface, s, d int) Traversal {
 	t := NewTraversal(g.Size())
 	sz := g.Size()
 	for v := 0; v < sz; v++ {
@@ -105,6 +123,10 @@ func Bfs(g Interface, s int) Traversal {
 	for !q.Empty() {
 		u := q.Get()
 		t.VertexOrdering = append(t.VertexOrdering, u)
+		t.Color[u] = Black
+		if u == d {
+			return t
+		}
 		for i := 0; i < g.Len(u); i++ {
 			v := g.Get(u, i)
 			t.EdgeOrdering = append(t.EdgeOrdering, Edge{u, v})
@@ -116,14 +138,13 @@ func Bfs(g Interface, s int) Traversal {
 			}
 		}
 		q.Remove()
-		t.Color[u] = Black
 	}
 	return t
 }
 
 // Dfs returns a Traversal based on graph data
 // collected during a depth first search.
-func Dfs(g Interface, s int) Traversal {
+func Dfs(g Interface, s, d int) Traversal {
 	t := NewTraversal(g.Size())
 	sz := g.Size()
 	for v := 0; v < sz; v++ {
@@ -137,6 +158,10 @@ func Dfs(g Interface, s int) Traversal {
 	for !st.Empty() {
 		u := st.Pop()
 		t.VertexOrdering = append(t.VertexOrdering, u)
+		t.Color[u] = Black
+		if u == d {
+			return t
+		}
 		for i := 0; i < g.Len(u); i++ {
 			v := g.Get(u, i)
 			t.EdgeOrdering = append(t.EdgeOrdering, Edge{u, v})
@@ -147,7 +172,6 @@ func Dfs(g Interface, s int) Traversal {
 				st.Push(v)
 			}
 		}
-		t.Color[u] = Black
 	}
 	return t
 }
@@ -155,18 +179,40 @@ func Dfs(g Interface, s int) Traversal {
 // StrongConnComponents returns a slice of Traversals one for each strongly connected component.
 // the index of each Traversal can be used as a unique component id and the verices belonging
 // to that component can be obtained from the VertexOrdering field of the Traversal.
-func StrongConnComponents(g Interface) []Traversal {
+func StrongConnComponents(g Interface, tm func(Interface, int, int) Traversal) []Traversal {
 	t := make([]Color, g.Size())
 	var m []Traversal
 	for i := 0; i < g.Size(); i++ {
 		if t[i] == White {
-			m = append(m, Dfs(g, i))
+			m = append(m, tm(g, i, -1))
 		}
 		for j, v := range m[len(m)-1].Color {
 			t[j] = v
 		}
 	}
 	return m
+}
+
+func ShortestPath(g Interface, s, d int) *Traversal {
+	if s < 0 || s > g.Size() || d < 0 || d > g.Size() {
+		return nil
+	}
+	switch g.(type) {
+	case Weighted:
+		// replace with weighted graph shortest path algorithm
+		tr := Bfs(g, s, d)
+		if tr.Color[d] == White {
+			return nil
+		}
+		return &tr
+	case Interface:
+		tr := Bfs(g, s, d)
+		if tr.Color[d] == White {
+			return nil
+		}
+		return &tr
+	}
+	return nil
 }
 
 // Convience types for common cases
@@ -182,7 +228,7 @@ func (g *IntGraph) Add(v, u int) {
 		a := make([][]int, v-len(*g))
 		*g = append(*g, a...)
 	}
-	(*g)[v-1] = append((*g)[v-1], u)
+	(*g)[v] = append((*g)[v], u)
 }
 func (g *IntGraph) Remove(v int) {
 	for i := range *g {
@@ -196,6 +242,43 @@ func (g *IntGraph) Remove(v int) {
 		}
 	}
 }
+
+// consider adding regular IntEdgeList as well to clarify usage
+type IntWeightedEdgeList [][]int
+
+func (g IntWeightedEdgeList) Get(i, j int) int { return g[i][j] }
+
+func (g IntWeightedEdgeList) Size() int     { return len(g) }
+func (g IntWeightedEdgeList) Len(i int) int { return len(g[i]) }
+func (g IntWeightedEdgeList) Weight(i, j int) int { return g[i][j+1] }
+
+type IntWeightedGraph [][][]int
+
+func (g IntWeightedGraph) Get(i, j int) int { return g[i][j][0] }
+
+func (g IntWeightedGraph) Size() int     { return len(g) }
+func (g IntWeightedGraph) Len(i int) int { return len(g[i]) }
+func (g *IntWeightedGraph) Add(v, u, w int) {
+	if v > len(*g)-1 {
+		a := make([][][]int, v-len(*g))
+		*g = append(*g, a...)
+	}
+	(*g)[v] = append((*g)[v], []int{u, w})
+}
+func (g *IntWeightedGraph) Remove(v int) {
+	for i := range *g {
+		for j := range (*g)[i] {
+			if (*g)[i][j][0] == v {
+				(*g)[i] = append((*g)[i][:j-1], (*g)[i][j:]...)
+			}
+		}
+		if i == v {
+			*g = append((*g)[:i-1], (*g)[i:]...)
+		}
+	}
+}
+
+func (g IntWeightedGraph) Weight(i, j int) int { return g[i][j][1] }
 
 type StringId struct {
 	S  string

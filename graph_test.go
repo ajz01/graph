@@ -25,7 +25,7 @@ func CompareTraversal(tr, r graph.Traversal, t *testing.T) {
 func TestConnectedBfs(t *testing.T) {
 	data := graph.IntGraph{{15, 25}, {15, 50}, {25, 50}}
 	g, _, _ := graph.InitEdgeList(data)
-	tr := graph.Bfs(g, 0)
+	tr := graph.Bfs(g, 0, -1)
 	r := graph.Traversal{
 		[]graph.Color{graph.Black, graph.Black, graph.Black},
 		[]int{0, 1, 2},
@@ -50,7 +50,7 @@ func TestStringConnectedBfs(t *testing.T) {
 		},
 	}
 	g, _, _ := graph.InitEdgeList(data)
-	tr := graph.Bfs(g, 0)
+	tr := graph.Bfs(g, 0, -1)
 	r := graph.Traversal{
 		[]graph.Color{graph.Black, graph.Black, graph.Black},
 		[]int{0, 1, 2},
@@ -64,7 +64,7 @@ func TestStringConnectedBfs(t *testing.T) {
 func TestConnectedDfs(t *testing.T) {
 	data := graph.IntGraph{{15, 25}, {15, 50}, {25, 50}}
 	g, _, _ := graph.InitEdgeList(data)
-	tr := graph.Dfs(g, 0)
+	tr := graph.Dfs(g, 0, -1)
 	r := graph.Traversal{
 		[]graph.Color{graph.Black, graph.Black, graph.Black},
 		[]int{0, 2, 1},
@@ -78,7 +78,7 @@ func TestConnectedDfs(t *testing.T) {
 func TestStrongConnComponents(t *testing.T) {
 	data := graph.IntGraph{{15, 25}, {15, 50}, {25, 50}, {35, 75}, {100, 300}}
 	g, _, _ := graph.InitEdgeList(data)
-	tr := graph.StrongConnComponents(g)
+	tr := graph.StrongConnComponents(g, graph.Dfs)
 	r := []graph.Traversal{
 		graph.Traversal{
 			[]graph.Color{graph.Black, graph.Black, graph.Black, graph.White, graph.White, graph.White, graph.White},
@@ -104,5 +104,23 @@ func TestStrongConnComponents(t *testing.T) {
 	}
 	for i, _ := range tr {
 		CompareTraversal(tr[i], r[i], t)
+	}
+}
+
+func TestShortestPath(t *testing.T) {
+	data := graph.IntGraph{{15, 25}, {15, 50}, {25, 50}, {35, 75}, {15, 35}}
+	g, m, _ := graph.InitEdgeList(data)
+	tr := graph.ShortestPath(g, m[15], m[30])
+	if tr == nil {
+		t.Error("Shortest path failed no path.")
+	}
+}
+
+func TestWeightedShortestPath(t *testing.T) {
+	data := graph.IntWeightedEdgeList{{15, 25, 5}, {25, 30, 8},{50, 75, 10}}
+	g, m, _ := graph.InitEdgeList(data)
+	tr := graph.ShortestPath(g, m[15], m[30])
+	if tr == nil {
+		t.Error("Shortest path failed no path.")
 	}
 }
