@@ -88,18 +88,18 @@ func TestStrongConnComponents(t *testing.T) {
 			[]int{0, 1, 1, 0, 0, 0, 0},
 		},
 		graph.Traversal{
-			[]graph.Color{graph.Black, graph.Black, graph.Black},
-			[]int{0, 2, 1},
-			[]graph.Edge{{0, 1}, {0, 2}, {1, 2}},
-			[]int{-1, 0, 0},
-			[]int{0, 1, 1},
+			[]graph.Color{graph.White, graph.White, graph.White, graph.Black, graph.Black, graph.White, graph.White},
+			[]int{3, 4},
+			[]graph.Edge{{3, 4}},
+			[]int{0, 0, 0, -1, 3, 0, 0},
+			[]int{0, 0, 0, 0, 1, 0, 0},
 		},
 		graph.Traversal{
-			[]graph.Color{graph.Black, graph.Black, graph.Black},
-			[]int{0, 2, 1},
-			[]graph.Edge{{0, 1}, {0, 2}, {1, 2}},
-			[]int{-1, 0, 0},
-			[]int{0, 1, 1},
+			[]graph.Color{graph.White, graph.White, graph.White, graph.White, graph.White, graph.Black, graph.Black},
+			[]int{5, 6},
+			[]graph.Edge{{5, 6}},
+			[]int{0, 0, 0, 0, 0, -1, 5},
+			[]int{0, 0, 0, 0, 0, 0, 1},
 		},
 	}
 	for i, _ := range tr {
