@@ -23,8 +23,8 @@ func CompareTraversal(tr, r graph.Traversal, t *testing.T) {
 }
 
 func TestConnectedBfs(t *testing.T) {
-	data := graph.IntGraph{{15, 25}, {15, 50}, {25, 50}}
-	g, _, _ := graph.InitEdgeList(data)
+	data := graph.IntEdgeList{{15, 25}, {15, 50}, {25, 50}}
+	g, _, _ := graph.EdgeToAdjacencyList(data)
 	tr := graph.Bfs(g, 0, -1)
 	r := graph.Traversal{
 		[]graph.Color{graph.Black, graph.Black, graph.Black},
@@ -37,7 +37,7 @@ func TestConnectedBfs(t *testing.T) {
 }
 
 func TestStringConnectedBfs(t *testing.T) {
-	data := graph.StringGraph{
+	data := graph.StringEdgeList{
 		{
 			graph.StringId{"Test", 15},
 			graph.StringId{"Test", 25},
@@ -49,7 +49,7 @@ func TestStringConnectedBfs(t *testing.T) {
 			graph.StringId{"Test", 50},
 		},
 	}
-	g, _, _ := graph.InitEdgeList(data)
+	g, _, _ := graph.EdgeToAdjacencyList(data)
 	tr := graph.Bfs(g, 0, -1)
 	r := graph.Traversal{
 		[]graph.Color{graph.Black, graph.Black, graph.Black},
@@ -62,8 +62,8 @@ func TestStringConnectedBfs(t *testing.T) {
 }
 
 func TestConnectedDfs(t *testing.T) {
-	data := graph.IntGraph{{15, 25}, {15, 50}, {25, 50}}
-	g, _, _ := graph.InitEdgeList(data)
+	data := graph.IntAdjacencyList{{15, 25}, {15, 50}, {25, 50}}
+	g, _, _ := graph.EdgeToAdjacencyList(data)
 	tr := graph.Dfs(g, 0, -1)
 	r := graph.Traversal{
 		[]graph.Color{graph.Black, graph.Black, graph.Black},
@@ -76,8 +76,8 @@ func TestConnectedDfs(t *testing.T) {
 }
 
 func TestStrongConnComponents(t *testing.T) {
-	data := graph.IntGraph{{15, 25}, {15, 50}, {25, 50}, {35, 75}, {100, 300}}
-	g, _, _ := graph.InitEdgeList(data)
+	data := graph.IntAdjacencyList{{15, 25}, {15, 50}, {25, 50}, {35, 75}, {100, 300}}
+	g, _, _ := graph.EdgeToAdjacencyList(data)
 	tr := graph.StrongConnComponents(g, graph.Dfs)
 	r := []graph.Traversal{
 		graph.Traversal{
@@ -108,8 +108,8 @@ func TestStrongConnComponents(t *testing.T) {
 }
 
 func TestShortestPath(t *testing.T) {
-	data := graph.IntGraph{{15, 25}, {15, 50}, {25, 50}, {35, 75}, {15, 35}}
-	g, m, _ := graph.InitEdgeList(data)
+	data := graph.IntAdjacencyList{{15, 25}, {15, 50}, {25, 50}, {35, 75}, {15, 35}}
+	g, m, _ := graph.EdgeToAdjacencyList(data)
 	tr := graph.ShortestPath(g, m[15], m[30])
 	if tr == nil {
 		t.Error("Shortest path failed no path.")
@@ -118,7 +118,7 @@ func TestShortestPath(t *testing.T) {
 
 func TestWeightedShortestPath(t *testing.T) {
 	data := graph.IntWeightedEdgeList{{15, 25, 5}, {25, 30, 8},{50, 75, 10}}
-	g, m, _ := graph.InitEdgeList(data)
+	g, m, _ := graph.EdgeToAdjacencyList(data)
 	tr := graph.ShortestPath(g, m[15], m[30])
 	if tr == nil {
 		t.Error("Shortest path failed no path.")
