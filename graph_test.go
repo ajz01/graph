@@ -62,7 +62,7 @@ func TestStringConnectedBfs(t *testing.T) {
 }
 
 func TestConnectedDfs(t *testing.T) {
-	data := graph.IntAdjacencyList{{15, 25}, {15, 50}, {25, 50}}
+	data := graph.IntEdgeList{{15, 25}, {15, 50}, {25, 50}}
 	g, _, _ := graph.EdgeToAdjacencyList(data)
 	tr := graph.Dfs(g, 0, -1)
 	r := graph.Traversal{
@@ -76,7 +76,7 @@ func TestConnectedDfs(t *testing.T) {
 }
 
 func TestStrongConnComponents(t *testing.T) {
-	data := graph.IntAdjacencyList{{15, 25}, {15, 50}, {25, 50}, {35, 75}, {100, 300}}
+	data := graph.IntEdgeList{{15, 25}, {15, 50}, {25, 50}, {35, 75}, {100, 300}}
 	g, _, _ := graph.EdgeToAdjacencyList(data)
 	tr := graph.StrongConnComponents(g, graph.Dfs)
 	r := []graph.Traversal{
@@ -108,7 +108,7 @@ func TestStrongConnComponents(t *testing.T) {
 }
 
 func TestShortestPath(t *testing.T) {
-	data := graph.IntAdjacencyList{{15, 25}, {15, 50}, {25, 50}, {35, 75}, {15, 35}}
+	data := graph.IntEdgeList{{15, 25}, {15, 50}, {25, 50}, {35, 75}, {15, 35}}
 	g, m, _ := graph.EdgeToAdjacencyList(data)
 	tr := graph.ShortestPath(g, m[15], m[30])
 	if tr == nil {

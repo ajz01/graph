@@ -47,6 +47,16 @@ type WeightedModifiable interface {
 	Remove(int)
 }
 
+type EdgeList interface {
+	Len() int
+	Get(int) (int, int)
+}
+
+type WeightedEdgeList interface {
+	EdgeList
+	Weight(int) int
+}
+
 type Edge struct {
 	U int
 	V int
@@ -83,32 +93,38 @@ func NewTraversal(n int) Traversal {
 // EdgeToAdjacencyList converts and edge list to adjacency list.
 // adjacency lists are more efficient, but edge lists are likely
 // input formats
-func EdgeToAdjacencyList(g Interface) (Interface, map[int]int, error) {
-	m := make(map[int]int, g.Size())
-	for i := 0; i < g.Size(); i++ {
-		for j := 0; j < 2; j++ {
-			m[g.Get(i, j)] = -1
-		}
+func EdgeToAdjacencyList(g EdgeList) (Interface, map[int]int, error) {
+	m := make(map[int]int, g.Len())
+	for i := 0; i < g.Len(); i++ {
+		u, v := g.Get(i)
+		m[u] = -1
+		m[v] = -1
 	}
 	n := 0
-	for i := 0; i < g.Size(); i++ {
-		for j := 0; j < 2; j++ {
-			if m[g.Get(i, j)] == -1 {
-				m[g.Get(i, j)] = n
-				n++
-			}
+	for i := 0; i < g.Len(); i++ {
+		u, v := g.Get(i)
+		if m[u] == -1 {
+			m[u] = n
+			n++
+		}
+		if m[v] == -1 {
+			m[v] = n
+			n++
 		}
 	}
-	if v, ok := g.(Weighted); ok {
+	if w, ok := g.(WeightedEdgeList); ok {
 		d := make(IntWeightedAdjacencyList, n)
-		for i := 0; i < g.Size(); i++ {
-			d.Add(m[g.Get(i, 0)], m[g.Get(i, 1)], v.Weight(i, 1))
+		for i := 0; i < g.Len(); i++ {
+			u, v := g.Get(i)
+			weight := w.Weight(i)
+			d.Add(m[u], m[v], weight)
 		}
 		return d, m, nil
 	}
 	d := make(IntAdjacencyList, n)
-	for i := 0; i < g.Size(); i++ {
-		d.Add(m[g.Get(i, 0)], m[g.Get(i, 1)])
+	for i := 0; i < g.Len(); i++ {
+		u, v := g.Get(i)
+		d.Add(m[u], m[v])
 	}
 	return d, m, nil
 }
@@ -250,103 +266,13 @@ func (g *IntAdjacencyList) Remove(v int) {
 }
 
 type IntEdgeList [][2]int
+func (g IntEdgeList) Len() int { return len(g) }
+func (g IntEdgeList) Get(i int) (int, int) { return g[i][0], g[i][1] }
 
-func (g IntEdgeList) Get(i, j int) int {
-	n := 0
-	for _, v := range g {
-		if v[0] == i {
-			n++
-		}
-		if n == j {
-			return v[1]
-		}
-	}
-	return -1
-}
-
-func (g IntEdgeList) Size() int {
-	n := 0
-	m := make( map[int]bool)
-	for _, v := range g {
-		if !m[v[0]] {
-			m[v[0]] = true
-			n++
-		}
-	}
-	return n
-}
-
-func (g IntEdgeList) Len(i int) int {
-	n := 0
-	for _, v := range g {
-		if v[0] == i {
-			n++
-		}
-	}
-	return n
-}
-
-func (g *IntEdgeList) Add(v, u int) {
-	*g = append((*g), [2]int{v, u})
-}
-func (g *IntEdgeList) Remove(v int) {
-	for i := range *g {
-		if (*g)[i][0] == v || (*g)[i][1] == v {
-			*g = append((*g)[:i], (*g)[i+1:]...)
-		}
-	}
-}
-
-// consider adding regular IntEdgeList as well to clarify usage
 type IntWeightedEdgeList [][3]int
-
-func (g IntWeightedEdgeList) Get(i, j int) int {
-	n := 0
-	for _, v := range g {
-		if v[0] == i {
-			n++
-		}
-		if n == j {
-			return v[1]
-		}
-	}
-	return -1
-}
-
-func (g IntWeightedEdgeList) Size() int {
-	n := 0
-	m := make( map[int]bool)
-	for _, v := range g {
-		if !m[v[0]] {
-			m[v[0]] = true
-			n++
-		}
-	}
-	return n
-}
-
-func (g IntWeightedEdgeList) Len(i int) int {
-	n := 0
-	for _, v := range g {
-		if v[0] == i {
-			n++
-		}
-	}
-	return n
-}
-
-func (g IntWeightedEdgeList) Weight(i, j int) int {
-	n := 0
-	for _, v := range g {
-		if v[0] == i {
-			n++
-		}
-		if n == j {
-			return v[2]
-		}
-	}
-	return -1
-}
+func (g IntWeightedEdgeList) Len() int { return len(g) }
+func (g IntWeightedEdgeList) Get(i int) (int, int) { return g[i][0], g[i][1] }
+func (g IntWeightedEdgeList) Weight(i int) int { return g[i][2] }
 
 type IntWeightedAdjacencyList [][][]int
 
@@ -382,41 +308,8 @@ type StringId struct {
 }
 
 type StringEdgeList[][2]StringId
-
-func (g StringEdgeList) Get(i, j int) int {
-	n := 0
-	for _, v := range g {
-		if v[0].Id == i {
-			n++
-		}
-		if n == j {
-			return v[1].Id
-		}
-	}
-	return -1
-}
-
-func (g StringEdgeList) Size() int {
-	n := 0
-	m := make( map[int]bool)
-	for _, v := range g {
-		if !m[v[0].Id] {
-			m[v[0].Id] = true
-			n++
-		}
-	}
-	return n
-}
-
-func (g StringEdgeList) Len(i int) int {
-	n := 0
-	for _, v := range g {
-		if v[0].Id == i {
-			n++
-		}
-	}
-	return n
-}
+func (g StringEdgeList) Len() int { return len(g) }
+func (g StringEdgeList) Get(i int) (int, int) { return g[i][0].Id, g[i][1].Id }
 
 type StringAdjacencyList [][]StringId
 
