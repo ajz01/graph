@@ -265,7 +265,7 @@ func (g *IntAdjacencyList) Size() int     { return len(*g) }
 func (g *IntAdjacencyList) Len(i int) int { return len((*g)[i]) }
 func (g *IntAdjacencyList) Add(v int) {
 	if v > len(*g)-1 {
-		a := make([][]int, v-len(*g))
+		a := make([][]int, v-len(*g)+1)
 		*g = append(*g, a...)
 	}
 }

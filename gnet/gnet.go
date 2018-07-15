@@ -7,6 +7,10 @@ type Method int
 const (
 	Add Method = iota
 	Remove
+	Bfs
+	Dfs
+	StrongConnected
+	Print
 )
 
 type Message struct {
