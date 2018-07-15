@@ -1,8 +1,10 @@
 package graph_test
 
-import "github.com/ajz01/graph"
-import "testing"
-import "fmt"
+import (
+	"github.com/ajz01/graph"
+	"testing"
+	"fmt"
+)
 
 func CompareTraversal(tr, r graph.Traversal, t *testing.T) {
 	if fmt.Sprintf("%v", tr.Color) != fmt.Sprintf("%v", r.Color) {

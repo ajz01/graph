@@ -3,8 +3,10 @@
 // the graph.Traversal type.
 package graph
 
-import "github.com/ajz01/graph/queue"
-import "github.com/ajz01/graph/stack"
+import (
+	"github.com/ajz01/graph/queue"
+	"github.com/ajz01/graph/stack"
+)
 
 type Color int
 
@@ -37,8 +39,10 @@ type Weighted interface {
 
 type Modifiable interface {
 	Interface
-	Add(int, int)
+	Add(int)
+	AddEdge(int, int)
 	Remove(int)
+	RemoveEdge(int, int)
 }
 
 type WeightedModifiable interface {
@@ -124,9 +128,9 @@ func EdgeToAdjacencyList(g EdgeList) (Interface, map[int]int, error) {
 	d := make(IntAdjacencyList, n)
 	for i := 0; i < g.Len(); i++ {
 		u, v := g.Get(i)
-		d.Add(m[u], m[v])
+		d.AddEdge(m[u], m[v])
 	}
-	return d, m, nil
+	return &d, m, nil
 }
 
 // Bfs returns a Traversal based on graph data
@@ -237,19 +241,36 @@ func ShortestPath(g Interface, s, d int) *Traversal {
 	return nil
 }
 
+func Add(g Modifiable, e EdgeList) {
+	for i := 0; i < e.Len(); i++ {
+		u, v := e.Get(i)
+		g.AddEdge(u, v)
+	}
+}
+
+func Remove(g Modifiable, e EdgeList) {
+	for i := 0; i < e.Len(); i++ {
+		u, v := e.Get(i)
+		g.RemoveEdge(u, v)
+	}
+}
+
 // Convience types for common cases
 type IntAdjacencyList [][]int
 
-func (g IntAdjacencyList) Get(i, j int) int { return g[i][j] }
+func (g *IntAdjacencyList) Get(i, j int) int { return (*g)[i][j] }
 
 //func (g IntAdjacencyList) Set(i, j, v int)  { g[i][j] = v }
-func (g IntAdjacencyList) Size() int     { return len(g) }
-func (g IntAdjacencyList) Len(i int) int { return len(g[i]) }
-func (g *IntAdjacencyList) Add(v, u int) {
+func (g *IntAdjacencyList) Size() int     { return len(*g) }
+func (g *IntAdjacencyList) Len(i int) int { return len((*g)[i]) }
+func (g *IntAdjacencyList) Add(v int) {
 	if v > len(*g)-1 {
 		a := make([][]int, v-len(*g))
 		*g = append(*g, a...)
 	}
+}
+func (g *IntAdjacencyList) AddEdge(v, u int) {
+	g.Add(v)
 	(*g)[v] = append((*g)[v], u)
 }
 func (g *IntAdjacencyList) Remove(v int) {
@@ -264,7 +285,11 @@ func (g *IntAdjacencyList) Remove(v int) {
 		}
 	}
 }
-
+func (g *IntAdjacencyList) RemoveEdge(v, u int) {
+	if v < len(*g) && u < len((*g)[v]) {
+		(*g)[v] = append((*g)[v][:u-1], (*g)[v][u:]...)
+	}
+}
 type IntEdgeList [][2]int
 func (g IntEdgeList) Len() int { return len(g) }
 func (g IntEdgeList) Get(i int) (int, int) { return g[i][0], g[i][1] }
