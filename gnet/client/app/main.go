@@ -1,38 +1,38 @@
 package main
 
 import "fmt"
-import "sync"
+import "os"
+import "strconv"
 import "github.com/ajz01/graph/gnet"
 import "github.com/ajz01/graph/gnet/client"
 
-var wg sync.WaitGroup
-
-func handleInput() {
-	for {
-		fmt.Printf("Enter message\n")
-		var a string
-		var u, v int
-		fmt.Scanln(&a, &u, &v)
-		var method gnet.Method
-		switch a {
-		case "Add":
-			method = gnet.Add
-		case "Remove":
-			method = gnet.Remove
-		case "Bfs":
-			method = gnet.Bfs
-		case "Dfs":
-			method = gnet.Dfs
-		case "Quit":
-			wg.Done()
-		}
-		client.SendMessage(method, u, v)
-		fmt.Println("sent")
+func handleInput(a string, u, v int) {
+	var method gnet.Method
+	switch a {
+	case "Add":
+		method = gnet.Add
+	case "Remove":
+		method = gnet.Remove
+	case "Bfs":
+		method = gnet.Bfs
+	case "Dfs":
+		method = gnet.Dfs
 	}
+	client.SendMessage(method, u, v)
+	fmt.Println("sent")
 }
 
 func main() {
-	wg.Add(1)
-	go handleInput()
-	wg.Wait()
+	if len(os.Args) < 4 {
+		return
+	}
+	u, err := strconv.Atoi(os.Args[2])
+	if err != nil {
+		fmt.Printf("Error %s not integer type.\n", os.Args[2])
+	}
+	v, err := strconv.Atoi(os.Args[3])
+	if err != nil {
+		fmt.Printf("Error %s not integer type.\n", os.Args[3])
+	}
+	handleInput(os.Args[1], u, v)
 }

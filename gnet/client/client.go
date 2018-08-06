@@ -18,11 +18,9 @@ func init() {
 	if err != nil {
 		panic(fmt.Sprintf("could not dial server: %s\n", err.Error()))
 	}
-	go handleResponse(conn)
 }
 
-func handleResponse(conn net.Conn) {
-	for {
+func handleResponse(done chan struct{}) {
 		b := make([]byte, 1024)
 		_, err := conn.Read(b)
 		var t graph.Traversal
@@ -30,11 +28,14 @@ func handleResponse(conn net.Conn) {
 		dec := gob.NewDecoder(buf)
 		dec.Decode(&t)
 		if err != nil {
-			fmt.Println(err.Error())
-			return
+			if err.Error() != "EOF" {
+				fmt.Println(err.Error())
+			}
+
+		} else {
+			fmt.Printf("%v\n", t)
 		}
-		fmt.Printf("%v\n", t)
-	}
+		done <- struct{}{}
 }
 
 func SendMessage(method gnet.Method, u, v int) {
@@ -42,8 +43,11 @@ func SendMessage(method gnet.Method, u, v int) {
 	buf := new(bytes.Buffer)
 	enc := gob.NewEncoder(buf)
 	enc.Encode(&m)
+	done := make(chan struct{})
+	go handleResponse(done)
 	_, err := conn.Write(buf.Bytes())
 	if err != nil {
 		fmt.Println(err.Error())
 	}
+	<-done
 }
