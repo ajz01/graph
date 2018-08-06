@@ -33,6 +33,7 @@ func handleResponse(conn net.Conn, done chan struct{}) {
 
 func SendMessage(method gnet.Method, u, v int) {
 	conn, err := net.Dial("tcp", "localhost:5000")
+	defer conn.Close()
 	if err != nil {
 		panic(fmt.Sprintf("could not dial server: %s\n", err.Error()))
 	}
