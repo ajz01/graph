@@ -29,6 +29,9 @@ func handleRequest(conn net.Conn) {
 		if m.Method == gnet.Add {
 			graph.Add(g, m.E)
 		}
+		if m.Method == gnet.Remove {
+			graph.Remove(g, m.E)
+		}
 		if m.Method == gnet.Bfs {
 			u, v := m.E.Get(0)
 			t := graph.Bfs(g, u, v)
@@ -38,7 +41,8 @@ func handleRequest(conn net.Conn) {
 			conn.Write(buf.Bytes())
 		}
 		if m.Method == gnet.Dfs {
-			t := graph.Dfs(g, 0, 0)
+			u, v := m.E.Get(0)
+			t := graph.Dfs(g, u, v)
 			buf = new(bytes.Buffer)
 			enc := gob.NewEncoder(buf)
 			enc.Encode(&t)

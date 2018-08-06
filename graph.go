@@ -4,6 +4,7 @@
 package graph
 
 import (
+	"fmt"
 	"github.com/ajz01/graph/queue"
 	"github.com/ajz01/graph/stack"
 )
@@ -271,6 +272,7 @@ func (g *IntAdjacencyList) Add(v int) {
 }
 func (g *IntAdjacencyList) AddEdge(v, u int) {
 	g.Add(v)
+	g.Add(u)
 	(*g)[v] = append((*g)[v], u)
 }
 func (g *IntAdjacencyList) Remove(v int) {
@@ -286,8 +288,17 @@ func (g *IntAdjacencyList) Remove(v int) {
 	}
 }
 func (g *IntAdjacencyList) RemoveEdge(v, u int) {
-	if v < len(*g) && u < len((*g)[v]) {
-		(*g)[v] = append((*g)[v][:u-1], (*g)[v][u:]...)
+	if v < len(*g) {
+		for i := 0; i < len((*g)[v]); i++ {
+			if (*g)[v][i] == u {
+				fmt.Println(i)
+				j := i
+				if j > 0 {
+					j--
+				}
+				(*g)[v] = append((*g)[v][:j], (*g)[v][j+1:]...)
+			}
+		}
 	}
 }
 type IntEdgeList [][2]int
@@ -336,8 +347,8 @@ type StringEdgeList[][2]StringId
 func (g StringEdgeList) Len() int { return len(g) }
 func (g StringEdgeList) Get(i int) (int, int) { return g[i][0].Id, g[i][1].Id }
 
-type StringAdjacencyList [][]StringId
+/*type StringAdjacencyList [][]StringId
 
 func (g StringAdjacencyList) Get(i, j int) int { return g[i][j].Id }
 func (g StringAdjacencyList) Size() int        { return len(g) }
-func (g StringAdjacencyList) Len(i int) int    { return len(g[i]) }
+func (g StringAdjacencyList) Len(i int) int    { return len(g[i]) }*/
